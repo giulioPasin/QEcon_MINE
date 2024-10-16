@@ -172,6 +172,21 @@ end
 # 5. Then use the calculated sum to get the mean
 # 6. Return the mean
 # 7. Test the function
+# Define the function to calculate mean
+function my_mean(n::Int)
+    total_sum = 0
+    for i in 1:n
+        total_sum += i
+    end
+    mean = total_sum / n
+    return mean
+end
+
+# Test the function with different values
+test_values = [5, 10, 20, 50]
+results = Dict(n => my_mean(n) for n in test_values)
+println(results)
+
 ####################################################################################### 
 
 
