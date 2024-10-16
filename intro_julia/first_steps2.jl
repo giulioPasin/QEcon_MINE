@@ -61,6 +61,34 @@ plot!(times_two,-10:0.1:10)
 # a. Write it in Julia such that α, β, γ, δ are keyword arguments. Test for arbitrary values of all parameters. 
 # b. Now write a function h(x) that accepts only a value x but evaluates g at the coefficients 4, -3, 2, and 10.
 # c. Plot function h at the interval (-100, 100), using a 0.1 step size
+# Define the polynomial function with keyword arguments
+function g(x; α=0, β=0, γ=0, δ=0)
+    return α*x^3 + β*x^2 + γ*x + δ
+end
+
+# Test for arbitrary values of all parameters
+g(2.0; α=1, β=2, γ=3, δ=4)  # This is an arbitrary test.
+
+# Define the function h(x) that uses specific coefficients for g
+function h(x)
+    return g(x; α=4, β=-3, γ=2, δ=10)
+end
+
+# Test the function h
+h(1.0)  # This is an arbitrary test.
+
+using Plots
+
+# Define the x values over the interval (-100, 100) with a step size of 0.1
+x_values = -100:0.1:100
+
+# Calculate the corresponding y values using the function h
+y_values = h.(x_values)
+
+# Plot the function
+plot(x_values, y_values, label="h(x)", xlabel="x", ylabel="h(x)", title="Plot of h(x) = 4x^3 - 3x^2 + 2x + 10", lw=2)
+
+
 ####################################################################################### 
 # NOTE: the way to write Greek letters is to start typing: \alpha, \beta etc.
 
