@@ -271,8 +271,8 @@ using DelimitedFiles, Plots, Optim
 data = readdlm("C:/Users/Algiu/OneDrive/Desktop/Class Material QUANT.ECON/QEcon_MINE/optimization/Admit_edParents.csv", ',')
 
 
-y_data = data[:, 1]  # Admission status (0 or 1)
-x_data = data[:, 2]  # Average parents' education
+y_data = data[:, 1]  
+x_data = data[:, 2]  
 
 # Visualize the data
 scatter(x_data, y_data, xlabel="Average parents education", ylabel="College admission",
@@ -287,7 +287,7 @@ end
 # Log-likelihood function
 function log_likelihood(β, x, y)
     p = logistic(x, β)
-    return -sum(y .* log.(p) .+ (1 .- y) .* log.(1 .- p))  # Negative Log-Likelihood
+    return -sum(y .* log.(p) .+ (1 .- y) .* log.(1 .- p))
 end
 
 # using optimization
