@@ -10,20 +10,20 @@ function iterative_solver(f, x0, α; ϵ = 1e-6, maxiter = 1000)
         push!(xs, x_next)
         push!(residuals, residual)
 
-        # Check for convergence
+        # Check convergence
         if residual / (1 + abs(xs[end])) < ϵ
             return (0, x_next, f(x_next), abs(x_next - g(x_next)), xs, residuals)
         end
     end
 
-    # If no convergence within max iterations
+    # If no convergence
     return (1, NaN, NaN, NaN, xs, residuals)
 end
 
-# Define the function f
+# function f
 f(x) = (x + 1)^(1/3) - x
 
-# Test the solver
+# Test 
 result = iterative_solver(f, 1.0, 0.5)
 println("Convergence Flag: ", result[1])
 println("Solution: ", result[2])
@@ -33,10 +33,10 @@ println("All Iterates: ", result[5])
 println("Residuals: ", result[6])
 
 
-#Problem2 Linear Algebra
+#Problem2: Linear Algebra
 using LinearAlgebra
 
-# Part 1: Exact solution
+
 function solve_exact(α, β)
     x5 = 1
     x4 = x5 + β
@@ -46,7 +46,7 @@ function solve_exact(α, β)
     return [x1, x2, x3, x4, x5]
 end
 
-# Part 2: Using the backslash operator
+#  Using the backslash operator
 function solve_system(α, β)
     A = [1 -1  0   α-β β;
          0  1 -1    0  0;
@@ -61,7 +61,7 @@ function solve_system(α, β)
     return (exact, backslash_sol, residual, condition_number)
 end
 
-# Part 3: Table
+# Table
 for β in [1, 10, 100, 10^12]
     println(solve_system(0.1, β))
 end
@@ -69,26 +69,26 @@ end
 
 
 #Problem3:  Internal Rate of Return
-# Install the Roots package (only if not already installed)
+
 import Pkg; Pkg.add("Roots")
 
-# Import the package
+
 using Roots
 
-# Part 1: NPV Function
+#  NPV Function
 function NPV(r, C)
     # Calculate Net Present Value given discount rate r and cash flows C
     return sum(C[t+1] / (1 + r)^t for t in 0:(length(C) - 1))
 end
 
-# Part 2 & 3: IRR Calculation Function
+#  IRR Calculation Function
 function internal_rate(C)
     # Check for valid input (cash flows must include both inflows and outflows)
     if all(C .>= 0) || all(C .<= 0)
         return "Root does not exist. Cash flows must include both inflows and outflows."
     end
 
-    # Define the root-finding problem
+    #  root-finding problem
     try
         irr = find_zero(r -> NPV(r, C), (0.0, 1.0)) # Search for IRR between 0 and 1
         return irr
@@ -97,7 +97,7 @@ function internal_rate(C)
     end
 end
 
-# Example Usage
+# Example
 cash_flows = [-5, 0, 0, 2.5, 5] # Example cash flows
 irr = internal_rate(cash_flows)
 println("Internal Rate of Return (IRR): ", irr)
@@ -146,7 +146,7 @@ function minimize_cost(α, σ, w1, w2, y)
     lower_bounds = [0.0, 0.0]  # Non-negativity constraints
     x0 = [1.0, 1.0]  # Initial guess
 
-    # Perform optimization
+    #  optimization
     result = optimize(
         x -> combined_cost(x, w1, w2, α, σ, y),  # Ensure function is properly passed
         lower_bounds,  # Lower bounds on x1, x2
@@ -166,7 +166,7 @@ function plot_cost_and_inputs()
     y = 1  # Production target
     w2 = 1  # Fixed input price for x2
 
-    # Create dictionaries to store results
+    # Create dictionaries
     costs = Dict()
     x1_results = Dict()
     x2_results = Dict()
@@ -185,7 +185,7 @@ function plot_cost_and_inputs()
     
     end
 
-    # Plot results
+    # Plot
     # Cost Function
     p1 = plot(w1_vals, costs["σ=0.25"], label="σ=0.25", xlabel="w1", ylabel="Cost", title="Cost Function")
     plot!(p1, w1_vals, costs["σ=1"], label="σ=1")
@@ -206,11 +206,11 @@ function plot_cost_and_inputs()
 end
 
 # Main Script Execution
-# Step 1: Contour plot of the production function
+
 println("Generating contour plots for production function...")
 plot_production_contour(0.5, [0.25, 1, 4])
 
-# Step 2: Plot cost and input demand
+
 println("Generating cost and input demand plots...")
 plot_cost_and_inputs()
 
