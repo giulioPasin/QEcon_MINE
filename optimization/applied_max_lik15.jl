@@ -285,7 +285,7 @@ function logistic(x, β)
 end
 
 # Log-likelihood function
-function log_likelihood(β, x, y)
+function log_likelihood9(β, x, y)
     p = logistic(x, β)
     return -sum(y .* log.(p) .+ (1 .- y) .* log.(1 .- p))
 end
@@ -307,3 +307,16 @@ x_vals = range(minimum(x_data), maximum(x_data), length=100)
 y_vals = logistic(x_vals, β_est)
 
 plot!(x_vals, y_vals, label="Logistic Regression Fit", color=:red)
+
+import Pkg; Pkg.add("ForwardDiff")
+using ForwardDiff
+
+#Calculate Hessian 
+hess = ForwardDiff.hessian(β -> log_likelihood(β, x_data, y_data), β_est)
+
+#  Calculate the standard errors
+std_err_β0 = sqrt(-inv(hess)[1,1])  # Standard error of β0 
+std_err_β1 = sqrt(-inv(hess)[2,2])  # Standard error of β1 
+
+println("Standard Error of β0: ", std_err_β0)
+println("Standard Error of β1: ", std_err_β1)
