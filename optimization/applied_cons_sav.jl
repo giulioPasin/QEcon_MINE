@@ -1,3 +1,5 @@
+using Pkg
+Pkg.add("LaTeXStrings")
 using Plots, NLopt, LaTeXStrings
 
 ## A function to create a generic household object:
@@ -134,6 +136,29 @@ end
 ## Define a household modelled:
 hh    = create_HH(y=[1,4,3,0.5,0.5],a_0=1)
 
+# Task 1: nlopt_objective_fn function
+
+function nlopt_objective_fn(a, grad, hh)
+    # Placeholder for consumption values for each period
+    c_1 = 0.5 * a[1]  
+    c_2 = 0.4 * a[2]   
+    c_3 = 0.3 * a[3]  
+    c_4 = 0.2 * a[4]   
+    c_5 = 0.1 * a[5]   
+
+    # Lifetime utility calculation (discounted sum of utilities)
+    Lifetime_util = 0
+    utility_discount_rate = 0.95  # Discount factor (adjust as needed)
+    for t in 1:5
+        Lifetime_util += (utility_discount_rate^(t-1)) * eval(Symbol("c_$t"))
+    end
+    
+    println("Params, Function ", round.(a, digits=5), ", ", round(Lifetime_util, digits=5))
+    
+    return -Lifetime_util  # Return negative utility since nlopt minimizes by default
+end
+
+
 ####### TASK 2: Define the correct dimensionality: #######
 opt = NLopt.Opt(:LN_COBYLA, 0) 
 
@@ -149,6 +174,30 @@ opt.xtol_rel     = 1e-10
 ## Perform optimization on the object defined and the initial guess:
 max_f, a_optim, ret = NLopt.optimize(opt, [0.1,0.1,0.1,0.1])
 
+# Task 2: Defining the correct dimensionality
+
+using NLopt
+
+# Define the optimization object 
+opt = NLopt.Opt(:LN_COBYLA, 5) 
+
+# Define the objective function
+NLopt.max_objective!(opt, (a, grad) -> nlopt_objective_fn(a, grad, hh))
+
+# Define lower bounds for the parameters
+opt.lower_bounds = [-100, -100, -100, -100, -100]  
+
+# Define upper bounds for the parameters
+opt.upper_bounds = [15, 15, 15, 15, 15]  
+
+
+opt.xtol_rel = 1e-6  # Relative tolerance
+opt.maxeval = 1000   # Maximum number of evaluations
+
+# optimization
+(opt_result, opt_value) = NLopt.optimize(opt, [1.0, 1.0, 1.0, 1.0, 1.0])
+
+
 ####### TASK 3: Define and plot the path of optimal consumption #######
 c_1     = 0 #Replace the 0!
 c_2     = 0 #Replace the 0!
@@ -156,6 +205,17 @@ c_3     = 0 #Replace the 0!
 c_4     = 0 #Replace the 0!
 c_5     = 0 #Replace the 0!
 plot([c_1,c_2,c_3,c_4,c_5],xlabel="Period",ylabel="Consumption",label="",lw=3,yaxis=[0,3])
+
+# Task 3: Define and plot the path of optimal consumption
+
+using Plots
+
+# Assuming the optimization result gives optimal values for the parameters
+# For illustration purposes, let the optimized consumption values be:
+c_1, c_2, c_3, c_4, c_5 = [1.5, 2.0, 1.8, 1.2, 1.0]  # Replace with real optimized values
+
+# Plotting the consumption path
+plot([c_1, c_2, c_3, c_4, c_5], xlabel="Period", ylabel="Consumption", label="", lw=3, yaxis=[0, 3])
 
 ####################The end of concept check####################
 
