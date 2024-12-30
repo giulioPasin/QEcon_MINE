@@ -107,110 +107,96 @@ println("Internal Rate of Return (IRR): ", irr)
 
 #Problem 4 :
 using Pkg
-Pkg.add("Optim")
 Pkg.add("Plots")
+Pkg.add("JuMP")
+Pkg.add("Ipopt")
 
-using Optim
 using Plots
-
-# CES Production Function
+using JuMP
+using Optim
+using LinearAlgebra
+using Ipopt
+# CES prod f.
 function ces_production(x1, x2, α, σ)
-    return (α * x1^((σ - 1) / σ) + (1 - α) * x2^((σ - 1) / σ))^(σ / (σ - 1))
-end
-
-# Contour plot for CES production function
-function plot_production_contour(α, σ_values)
-    x1 = range(0.1, 5, length=50)  # Input range for x1
-    x2 = range(0.1, 5, length=50)  # Input range for x2
-
-    # Create contour plots for each value of σ
-    plot_layout = @layout [a b c]  # Arrange plots side by side
-    plots = []
-    for σ in σ_values
-        z = [ces_production(x, y, α, σ) for x in x1, y in x2]
-        push!(plots, contour(x1, x2, z, xlabel="x1", ylabel="x2", title="Production Contour σ=$σ"))
+    if σ == 1
+        return x1^α * x2^(1 - α)   
+    else
+        return ((α * x1^((σ - 1) / σ)) + ((1 - α) * x2^((σ - 1) / σ)))^(σ / (σ - 1))
     end
-    plot(plots..., layout=plot_layout, size=(1200, 400))
 end
 
-# Combined objective with penalty for constraint
-function combined_cost(x, w1, w2, α, σ, y, λ=1e6)
-    cost = w1 * x[1] + w2 * x[2]
-    penalty = λ * (ces_production(x[1], x[2], α, σ) - y)^2  # Penalize constraint violations
-    return cost + penalty
-end
-
-# Cost function optimization
+# minimization cost function
 function minimize_cost(α, σ, w1, w2, y)
-    # Bounds and initial guess
-    lower_bounds = [0.0, 0.0]  # Non-negativity constraints
-    x0 = [1.0, 1.0]  # Initial guess
+    model = Model(optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
 
-    #  optimization
-    result = optimize(
-        x -> combined_cost(x, w1, w2, α, σ, y),  # Ensure function is properly passed
-        lower_bounds,  # Lower bounds on x1, x2
-        x0,  # Initial guess
-        LBFGS()  # Optimization method
-    )
+    #  x1 and x2
+    @variable(model, x1 >= 0)
+    @variable(model, x2 >= 0)
 
-    # Return cost, x1, x2
-    return (result.minimum, result.minimizer[1], result.minimizer[2])
+    #  Minimize cost
+    @objective(model, Min, w1 * x1 + w2 * x2)
+
+    #  Production target
+    if σ == 1
+        @constraint(model, x1^α * x2^(1 - α) == y)
+    else
+        @constraint(model, ((α * x1^((σ - 1) / σ)) + ((1 - α) * x2^((σ - 1) / σ)))^(σ / (σ - 1)) == y)
+    end
+
+    # optimization problem
+    optimize!(model)
+
+    
+    cost = objective_value(model)
+    x1_opt = value(x1)
+    x2_opt = value(x2)
+    return cost, x1_opt, x2_opt
 end
 
-# Plot cost and input demand
-function plot_cost_and_inputs()
-    w1_vals = range(0.1, 10, length=50)  # Range of w1 values
-    σ_values = [0.25, 1, 4]  # Values of σ
-    α = 0.5
-    y = 1  # Production target
-    w2 = 1  # Fixed input price for x2
-
-    # Create dictionaries
-    costs = Dict()
-    x1_results = Dict()
-    x2_results = Dict()
+# Plots for xost and input demand functions
+function plot_cost_and_inputs(α, σ_values, w1_range, w2, y)
+    costs = []
+    x1_vals = []
+    x2_vals = []
 
     for σ in σ_values
-        costs["σ=$σ"] = []
-        x1_results["σ=$σ"] = []
-        x2_results["σ=$σ"] = []
-
-        for w1 in w1_vals
+        cost_σ = []
+        x1_σ = []
+        x2_σ = []
+        for w1 in w1_range
             cost, x1, x2 = minimize_cost(α, σ, w1, w2, y)
-            push!(costs["σ=$σ"], cost)
-            push!(x1_results["σ=$σ"], x1)
-            push!(x2_results["σ=$σ"], x2)
+            push!(cost_σ, cost)
+            push!(x1_σ, x1)
+            push!(x2_σ, x2)
         end
-    
+        push!(costs, cost_σ)
+        push!(x1_vals, x1_σ)
+        push!(x2_vals, x2_σ)
     end
 
     # Plot
-    # Cost Function
-    p1 = plot(w1_vals, costs["σ=0.25"], label="σ=0.25", xlabel="w1", ylabel="Cost", title="Cost Function")
-    plot!(p1, w1_vals, costs["σ=1"], label="σ=1")
-    plot!(p1, w1_vals, costs["σ=4"], label="σ=4")
+    plot(w1_range, costs[1], label = "σ = $(σ_values[1])", title = "Cost Function", xlabel = "w1", ylabel = "Cost")
+    plot!(w1_range, costs[2], label = "σ = $(σ_values[2])")
+    plot!(w1_range, costs[3], label = "σ = $(σ_values[3])")
+    savefig("cost_function.png")
 
-    # Input Demand x1
-    p2 = plot(w1_vals, x1_results["σ=0.25"], label="σ=0.25", xlabel="w1", ylabel="x1", title="Input Demand x1")
-    plot!(p2, w1_vals, x1_results["σ=1"], label="σ=1")
-    plot!(p2, w1_vals, x1_results["σ=4"], label="σ=4")
+    plot(w1_range, x1_vals[1], label = "σ = $(σ_values[1])", title = "Input x1 Demand", xlabel = "w1", ylabel = "x1")
+    plot!(w1_range, x1_vals[2], label = "σ = $(σ_values[2])")
+    plot!(w1_range, x1_vals[3], label = "σ = $(σ_values[3])")
+    savefig("x1_demand.png")
 
-    # Input Demand x2
-    p3 = plot(w1_vals, x2_results["σ=0.25"], label="σ=0.25", xlabel="w1", ylabel="x2", title="Input Demand x2")
-    plot!(p3, w1_vals, x2_results["σ=1"], label="σ=1")
-    plot!(p3, w1_vals, x2_results["σ=4"], label="σ=4")
-
-    # Combine all plots into a single layout
-    plot(p1, p2, p3, layout=grid(3, 1), size=(800, 800))
+    plot(w1_range, x2_vals[1], label = "σ = $(σ_values[1])", title = "Input x2 Demand", xlabel = "w1", ylabel = "x2")
+    plot!(w1_range, x2_vals[2], label = "σ = $(σ_values[2])")
+    plot!(w1_range, x2_vals[3], label = "σ = $(σ_values[3])")
+    savefig("x2_demand.png")
 end
 
-# Main Script Execution
+# Parameters
+α = 0.5
+σ_values = [0.25, 1, 4]
+w1_range = 0.1:0.1:10
+w2 = 1
+y = 1
 
-println("Generating contour plots for production function...")
-plot_production_contour(0.5, [0.25, 1, 4])
-
-
-println("Generating cost and input demand plots...")
-plot_cost_and_inputs()
-
+# rrun function
+plot_cost_and_inputs(α, σ_values, w1_range, w2, y)
