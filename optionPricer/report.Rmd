@@ -1,0 +1,40 @@
+---
+title: "Down-and-In Call Option Pricing"
+author: "Giulio Pasin"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(optionPricer)
+
+# Parameters
+S0 <- 105
+K <- 110
+r <- 0.05
+sigma <- 0.21
+T <- 0.75
+barrier <- 95
+
+# Price calculation
+price <- monteCarloDownInCall(S0, K, r, sigma, T, barrier, 10000)
+cat("Theoretical price of the down-and-in call option:", price)
+
+# Generate data
+volatilities <- seq(0.1, 0.4, by = 0.05)
+maturities <- seq(0.25, 2, by = 0.25)
+results <- expand.grid(vol = volatilities, mat = maturities)
+results$price <- mapply(function(vol, mat) {
+  monteCarloDownInCall(S0, K, r, vol, mat, barrier, 10000)
+}, results$vol, results$mat)
+
+# Plot
+library(ggplot2)
+ggplot(results, aes(x = vol, y = mat, fill = price)) +
+  geom_tile() +
+  scale_fill_gradient2() +
+  labs(title = "Option Price vs Volatility and Maturity",
+       x = "Volatility", y = "Time to Maturity", fill = "Price")
+
+

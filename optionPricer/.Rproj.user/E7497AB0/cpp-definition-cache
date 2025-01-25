@@ -1,0 +1,36 @@
+[
+    {
+        "file": "C:/Users/Algiu/OneDrive/Desktop/optionPricer/src/MonteCarloOption.cpp",
+        "file_last_write": 1737450983.0,
+        "definitions": [
+            {
+                "usr": "c:@F@monteCarloDownInCall#d#d#d#d#d#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "monteCarloDownInCall(double, double, double, double, double, double, int)",
+                "file": "C:/Users/Algiu/OneDrive/Desktop/optionPricer/src/MonteCarloOption.cpp",
+                "line": 7,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "C:/Users/Algiu/OneDrive/Desktop/optionPricer/src/rcpp_hello_world.cpp",
+        "file_last_write": 1737197019.0,
+        "definitions": [
+            {
+                "usr": "c:@F@rcpp_hello_world#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rcpp_hello_world",
+                "file": "C:/Users/Algiu/OneDrive/Desktop/optionPricer/src/rcpp_hello_world.cpp",
+                "line": 6,
+                "column": 6,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    }
+]

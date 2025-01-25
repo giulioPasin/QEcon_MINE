@@ -1,0 +1,10 @@
+Package: optionPricer
+Type: Package
+Title: Down-and-In Call Option Pricer
+Version: 1.0
+Author: Giulio Pasin
+Maintainer: g.pasin@student.uw.edu.pl
+Description: Monte Carlo pricing of a down-and-in call option using Rcpp.
+License: GPL-3
+Encoding: UTF-8
+
