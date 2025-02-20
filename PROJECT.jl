@@ -48,6 +48,20 @@ function gini_coefficient(x)
     return 1 - 2 * sum((n - i + 0.5) * x_sorted[i] for i in 1:n) / (n * sum(x))
 end
 
+# Generate required plots
+function generate_plots(V, policy, grid_assets, grid_productivity)
+    plot1 = plot(grid_assets, V, title="Value Functions for Both Economies")
+    plot2 = plot(grid_assets, policy, title="Policy Functions for Both Economies")
+    plot3 = histogram(grid_assets, title="Marginal Distribution of Assets")
+    lorenz_x = cumsum(sort(grid_assets)) / sum(grid_assets)
+    lorenz_y = collect(range(0, 1, length=length(lorenz_x)))
+    plot4 = plot(lorenz_x, lorenz_y, title="Lorenz Curves for After-Tax Labor Income and Assets")
+    display(plot1)
+    display(plot2)
+    display(plot3)
+    display(plot4)
+end
+
 # Bellman equation iteration for value function and policy function
 function solve_bellman(grid_assets, grid_productivity, transition_matrix, r, w, λ, β, γ)
     V = zeros(length(grid_assets), length(grid_productivity)) # Initial value function
@@ -101,6 +115,7 @@ function main()
         gini_income = gini_coefficient(grid_productivity .* w)
         push!(results, (λ, r, w, gini_assets, gini_income))
         println("λ = $λ: r = $r, w = $w, Gini(assets) = $gini_assets, Gini(income) = $gini_income")
+        generate_plots(V, policy, grid_assets, grid_productivity)
     end
     return results
 end
